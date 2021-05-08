@@ -46,7 +46,7 @@ class ABRv1(IR2A): # define a qualidade do segmento de video
         self.send_up(msg)
 
     def handle_segment_size_request(self, msg):
-        status = self.whiteboard.get_playback_history()
+        # informacao buffer
         buffer = self.whiteboard.get_playback_buffer_size()
 
         # tempo transcorrido entre o pedido do sgmento e seu recebimento
@@ -68,7 +68,7 @@ class ABRv1(IR2A): # define a qualidade do segmento de video
         # codigo principal
         global qualidade
         global flag_buffer
-        if(status): 
+        if(buffer): 
             # buffer vazio
             if(buffer[-1][1] <= 20 and qualidade > 0):
                 flag_buffer = 1
