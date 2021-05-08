@@ -16,10 +16,11 @@ from player.parser import *
 from r2a.ir2a import IR2A
 
 
+# globai de controle
 qualidade = 0 # comecar com QI menor?
-start = 0
-end = 0
-size = 0
+inicio = 0
+fim = 0
+tamanho = 0
 taxa_atual = 0
 taxa_anterior = 0
 variacao_taxa = 1
@@ -48,60 +49,64 @@ class ABRv1(IR2A): # define a qualidade do segmento de video
         status = self.whiteboard.get_playback_history()
         buffer = self.whiteboard.get_playback_buffer_size()
 
-        global start
-        t = (end - start)
-        #print("tempo = " + str(t))
+        # tempo transcorrido entre o pedido do sgmento e seu recebimento
+        global inicio
+        tempo = (fim - inicio)
 
+        # taxa de transmissao do pedido anterior
         global taxa_atual
-        if(t > 0):
-            taxa_atual = size/t
-            #print("taxa_atual = " + str(taxa_atual))
+        if(tempo > 0):
+            taxa_atual = tamanho/tempo
 
         # variacao de taxa de transmissao
-        global taxa_anterior
+        global taxa_anterior # taxa de transmissao de dois pedidos atras
         global variacao_taxa
         if(taxa_anterior > 0):
             variacao_taxa = taxa_atual/taxa_anterior # > 1 bom, < 1 ruim
         taxa_anterior = taxa_atual
-        #print("var = " + str(variacao_taxa))
 
-        start = time.time()
-        # print("start = " + str(start))
-
+        # codigo principal
         global qualidade
         global flag_buffer
         if(status): 
-            if(buffer[-1][1] >= 50): # buffer cheio, QI++
-                if(qualidade < 9):
-                    qualidade = 9
-                else:
-                    qualidade = int(qualidade*1.25) # crescer nao tao rapido para nao demorar muito o envio esvaziando o buffer
-                    if(qualidade > 19): # garante que nao sai dos limites (maior que 19)
-                        qualidade = 19
-            if(buffer[-1][1] <= 20 and qualidade > 0): # buffer vazio, QI--
+            # buffer vazio
+            if(buffer[-1][1] <= 20 and qualidade > 0):
                 flag_buffer = 1
-                qualidade = int(qualidade/1.5) # tinha: if(qualidade > 3):
-            if(buffer[-1][1] > 20 and buffer[-1][1] <= 30): # buffer meio vazio
-                if(variacao_taxa < 1 and qualidade > 0 and flag_buffer == 0): # flag garante que nao vai diminuir o QI quando estiver voltando a crescer (enchendo o buffer)
+                qualidade = int(qualidade/1.5)
+            # buffer meio vazio
+            if(buffer[-1][1] > 20 and buffer[-1][1] <= 30):
+                if(variacao_taxa < 1 and qualidade > 0 and flag_buffer == 0):
                     qualidade -= 1
-            if(buffer[-1][1] > 30 and buffer[-1][1] < 50): # buffer meio cheio
+            # buffer meio cheio
+            if(buffer[-1][1] > 30 and buffer[-1][1] < 50):
                 flag_buffer = 0
                 if(variacao_taxa > 1 and qualidade < 19):   
                     qualidade += 1
-
+            # buffer cheio
+            if(buffer[-1][1] >= 50):
+                if(qualidade < 9):
+                    qualidade = 9
+                else:
+                    qualidade = int(qualidade*1.25)
+                    if(qualidade > 19):
+                        qualidade = 19
+            
         msg.add_quality_id(self.qi[qualidade])
+
+        # inicio da contagem de tempo da requisicao de segmento
+        inicio = time.time()
 
         # passa mensagem adiante para o ConnectionHandler
         self.send_down(msg) 
 
     def handle_segment_size_response(self, msg):
-        global size
-        size = msg.get_bit_length()
-        #print("size = " + str(size))
+        # tamanho do segmento recebido
+        global tamanho
+        tamanho = msg.get_bit_length()
 
-        global end
-        end = time.time()
-        #print("end = " + str(end))
+        # fim da contagem de tempo da requisicao de segmento
+        global fim
+        fim = time.time()
 
         # passa mensagem adiante para o Player
         self.send_up(msg) 
