@@ -16,7 +16,7 @@ from player.parser import *
 from r2a.ir2a import IR2A
 
 
-qualidade = 9
+qualidade = 0 # comecar com QI menor?
 start = 0
 end = 0
 size = 0
@@ -63,7 +63,6 @@ class ABRv1(IR2A): # define a qualidade do segmento de video
         if(taxa_anterior > 0):
             variacao_taxa = taxa_atual/taxa_anterior # > 1 bom, < 1 ruim
         taxa_anterior = taxa_atual
-
         #print("var = " + str(variacao_taxa))
 
         start = time.time()
@@ -71,7 +70,7 @@ class ABRv1(IR2A): # define a qualidade do segmento de video
 
         global qualidade
         global flag_buffer
-        if(status):       
+        if(status): 
             if(buffer[-1][1] >= 50): # buffer cheio, QI++
                 if(qualidade < 9):
                     qualidade = 9
@@ -81,10 +80,9 @@ class ABRv1(IR2A): # define a qualidade do segmento de video
                         qualidade = 19
             if(buffer[-1][1] <= 20 and qualidade > 0): # buffer vazio, QI--
                 flag_buffer = 1
-                if(qualidade > 5): # nao precisa diminuir mais, assim mantem o QI medio mais alto
-                    qualidade = int(qualidade/1.7)
+                qualidade = int(qualidade/1.5) # tinha: if(qualidade > 3):
             if(buffer[-1][1] > 20 and buffer[-1][1] <= 30): # buffer meio vazio
-                if(variacao_taxa < 1 and qualidade > 0 and flag_buffer == 0): # flag garante que nao vai diminuir o QI quando estiver oltando a crescer (enchendo o buffer)
+                if(variacao_taxa < 1 and qualidade > 0 and flag_buffer == 0): # flag garante que nao vai diminuir o QI quando estiver voltando a crescer (enchendo o buffer)
                     qualidade -= 1
             if(buffer[-1][1] > 30 and buffer[-1][1] < 50): # buffer meio cheio
                 flag_buffer = 0
