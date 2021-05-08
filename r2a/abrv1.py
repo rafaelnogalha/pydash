@@ -87,7 +87,7 @@ class ABRv1(IR2A): # define a qualidade do segmento de video
                 if(qualidade < 9):
                     qualidade = 9
                 else:
-                    qualidade = int(qualidade*1.25)
+                    qualidade = int(qualidade*1.2)
                     if(qualidade > 19):
                         qualidade = 19
             
