@@ -16,8 +16,8 @@ from player.parser import *
 from r2a.ir2a import IR2A
 
 
-# globai de controle
-qualidade = 0 # comecar com QI menor?
+# global de controle
+qualidade = 0 
 inicio = 0
 fim = 0
 tamanho = 0
@@ -49,7 +49,7 @@ class ABRv1(IR2A): # define a qualidade do segmento de video
         # informacao buffer
         buffer = self.whiteboard.get_playback_buffer_size()
 
-        # tempo transcorrido entre o pedido do sgmento e seu recebimento
+        # tempo transcorrido entre o pedido do segmento e seu recebimento
         global inicio
         tempo = (fim - inicio)
 
